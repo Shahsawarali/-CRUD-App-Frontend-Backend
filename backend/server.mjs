@@ -5,6 +5,17 @@ app.use(cors())
 app.use(express.json())
 const port = 3000
 
+let users = [
+    {
+        id: 1,
+        name: 'Ali khan',
+        email: 'ali@example.com',
+    }, {
+        id: 2,
+        name: 'asad',
+        email: 'asad@example.com',
+    }
+]
 
 
 app.listen(port, () => {
