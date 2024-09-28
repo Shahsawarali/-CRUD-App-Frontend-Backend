@@ -6,6 +6,7 @@ const API_URL = 'hhttp://localhost:3000/users'
 function App() {
   
   const [users, setusers] = useState([]);
+  const [newUser, setnewUser] = useState("");
 
   const fertchUsers = async () => {
       const response = await axios.get(API_URL)
@@ -19,10 +20,25 @@ function App() {
   }, []);
 
 
+  const addUser = () => {
+    axios.post(API_URL, {
+        name: newUser,
+    })
+    .then(response => {
+        setusers([...users, response.data])
+        setnewUser("")
+        fertchUsers()
+    }).catch(err => console.log(err))
+}
+
+
+
   return (
     <>
      <h1>CRUD Application</h1>
      <input type="text" />
+     <input type="text" value={newUser} onChange={(e) => setnewUser(e.target.value)}/>
+            <button onClick={addUser}>Add User</button>
     </>
   )
 }
