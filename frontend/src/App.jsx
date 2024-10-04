@@ -1,76 +1,93 @@
-import { useState,useEffect } from 'react'
+import { useEffect, useState } from "react"
 import axios from 'axios'
 
-const API_URL = 'hhttp://localhost:3000/users'
+const API_URL = 'http://localhost:3000/api/users'
+
 
 function App() {
-  
-  const [users, setusers] = useState([]);
-  const [newUser, setnewUser] = useState("");
-  const [updatedUser, setupdatedUser] = useState({id:"",name:''});
+ const [users, setUsers]  = useState([])
+ const [newUser, setNewUser] = useState('');
+ const [updateUser, setUpdateUser] = useState({ id: '', name: '' });
 
-  const fertchUsers = async () => {
-      const response = await axios.get(API_URL)
-      const content = response.data
+ async function fetchUsers(){
+    const response = await axios.get(API_URL)
+    const content = response.data
+    
+    setUsers(content.data)
+ }
 
-      setusers(content.data)
-    }
-
-    useEffect(() => {
-      fertchUsers()
-  }, []);
+ useEffect(()=>{
+  fetchUsers()
+ },[])
 
 
+ // Add a user (CREATE)
   const addUser = () => {
-    axios.post(API_URL, {
-        name: newUser,
-    })
-    .then(response => {
-        setusers([...users, response.data])
-        setnewUser("")
-        fertchUsers()
-    }).catch(err => console.log(err))
-}
+    axios.post(API_URL, { name: newUser })
+      .then(response => {
+        setUsers([...users, response.data]);
+        setNewUser(''); // Reset input
+        fetchUsers()
+      })
+      .catch(err => console.error(err));
+  };
 
+  const updateUserById = (id) => {
+    axios.put(`${API_URL}/${id}`, { name: updateUser.name })
+      .then(response => {
+        setUsers(users.map(user => (user.id === id ? response.data : user)));
+        setUpdateUser({ id: '', name: '' }); // Reset input
+        fetchUsers()
+      })
+      .catch(err => console.error(err));
+  };
 
-const updatingUserBID = (id) => {
-  axios.put(`${API_URL}/${id}`, {
-      name: updatedUser.name
-  })
-  .then(response => {
-      setusers(users.map(user => user.id === id ? response.data : user))
-      setupdatedUser({id:"",name:""})
-      fertchUsers()
-  }).catch(err => console.log(err))
-}
-
+  // Delete a user (DELETE)
+  const deleteUserById = (id) => {
+    axios.delete(`${API_URL}/${id}`)
+      .then(() => {
+        setUsers(users.filter(user => user.id !== id));
+      })
+      .catch(err => console.error(err));
+  };
 
 
   return (
     <>
-     <h1>CRUD Application</h1>
-     <input type="text" />
-     <input type="text" value={newUser} onChange={(e) => setnewUser(e.target.value)}/>
-            <button onClick={addUser}>Add User</button>
+      <h1>CRUD Operations with Express & React</h1>
+      <input
+        type="text"
+        value={newUser}
+        onChange={(e) => setNewUser(e.target.value)}
+        placeholder="Enter new user"
+      />
+      <button onClick={addUser}>Add User</button>
 
-            {updatedUser.id && (
-                <div>
-                    <input type="text" value={updatedUser.name} onChange={(e) => setupdatedUser({...updatedUser, name: e.target.value})} placeholder="Update User Name" />
-                    <button onClick={() => updatingUserBID(updatedUser.id)}>Update User</button>
-                </div>
-            )}
-          
-          <ul>
-                {users.map(user => (
-                    <li key={user.id}>
-                        {user.name}
-                        <button onClick={() => setupdatedUser({id:user.id, name:user.name})}>Edit</button>
-                        <button onClick={() => deleteUser(user.id)}>Delete</button>
-                    </li>
-                ))}
-            </ul>
+      {/* Update User */}
+      {updateUser.id && (
+        <div>
+          <input
+            type="text"
+            value={updateUser.name}
+            onChange={(e) => setUpdateUser({ ...updateUser, name: e.target.value })}
+            placeholder="Update user name"
+          />
+          <button onClick={() => updateUserById(updateUser.id)}>Update User</button>
+        </div>
+      )}
+
+      <ul>
+        {users.map(user => (
+          <li key={user.id}>
+            {user.name}
+            <button onClick={() => setUpdateUser({ id: user.id, name: user.name })}>
+              Edit
+            </button>
+            <button onClick={() => deleteUserById(user.id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
     </>
   )
 }
-
 export default App
